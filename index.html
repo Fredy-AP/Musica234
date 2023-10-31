@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      text-align: center;
+      font-family: Arial, sans-serif;
+    }
+
+    h1 {
+      font-size: 24px;
+    }
+
+    .playlist {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .song {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .playlist-img {
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+    }
+
+    .playlist-name {
+      font-size: 18px;
+    }
+
+    .playlist-artist {
+      font-size: 14px;
+    }
+
+    .playlist-playpause {
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    #audio {
+      width: 100%;
+      max-width: 400px;
+      margin: 20px auto;
+    }
+
+    #search {
+      margin: 20px;
+    }
+  </style>
+  <title>Reproductor de Música</title>
+</head>
+<body>
+  <h1>Mi Rockola</h1>
+  <input type="text" id="search" placeholder="Buscar una canción por nombre">
+  <div id="playlist" class="playlist">
+    <!-- La lista de reproducción se cargará aquí desde la API -->
+  </div>
+  <audio id="audio" controls>
+    Tu navegador no soporta la etiqueta de audio.
+  </audio>
+  <script>
+    const API_KEY = '642601';
+    const API_URL = `https://api.deezer.com/playlist/39694630/tracks?limit=10&output=json&access_token=${642601}`;
+
+    async function loadPlaylistFromAPI() {
+      try {
+        const response = await fetch(API_URL);
+        if (!response.ok) {
+          throw new Error('No se pudo cargar la lista de reproducción desde la API de Deezer');
+        }
+
+        const data = await response.json();
+        const playlist = document.getElementById('playlist');
+
+        data.data.forEach((e) => {
+          const songElement = document.createElement('div');
+          songElement.classList.add('song');
+          songElement.innerHTML = `
+            <img class="playlist-img" src="${e.album.cover_big}" alt="imagen del álbum de la música">
+            <div class="title-section">
+              <h3 class="playlist-name">${e.title}</h3>
+              <span class="playlist-artist">${e.artist.name}</span>
+            </div>
+            <button type="button" class="playlist-playpause" data-url="${e.preview}">
+              <i class="fas fa-play"></i>
+            </button>
+          `;
+
+          songElement.querySelector('.playlist-playpause').addEventListener('click', () => {
+            const audio = document.getElementById('audio');
+            audio.src = e.preview;
+            audio.play();
+          });
+
+          playlist.appendChild(songElement);
+        });
+      } catch (error) {
+        console.error('Error al cargar la lista de reproducción desde la API de Deezer:', error);
+      }
+    }
+
+    loadPlaylistFromAPI();
+
+// Función para buscar canciones por nombre
+document.getElementById('search').addEventListener('input', () => {
+  const searchTerm = document.getElementById('search').value.toLowerCase();
+  const songs = document.querySelectorAll('.song');
+
+  songs.forEach((song) => {
+    const songName = song.querySelector('.playlist-name').textContent.toLowerCase();
+    if (songName.includes(searchTerm)) {
+      song.style.display = 'flex'; // Aquí está la corrección
+    } else {
+      song.style.display = 'none';
+    }
+  });
+});
+  </script>
+</body>
+</html>
+
+
